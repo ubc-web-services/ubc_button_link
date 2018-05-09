@@ -1,0 +1,152 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: veades
+ * Date: 2015-02-15
+ * Time: 3:48 PM
+ */
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function ubc_button_link_field_formatter_info() {
+
+    $format = array(
+        'button_link' => array(
+            'label' => t('UBC CLF Button Link'),
+            'field types' => array('link_field'),
+            'settings' => array(
+                'button_styles' => '',
+                'custom_class' => '',
+                'target' => '',
+            ),
+        ),
+    );
+
+    return $format;
+}
+
+/**
+ * Implements hook_field_formatter_settings_form().
+ */
+function ubc_button_link_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
+    $display = $instance['display'][$view_mode];
+    $settings = $display['settings'];
+
+    $targets = array(   '_blank' => t('Blank'),
+                        '_parent' => t('Parent'),
+                        '_self' => t('Self'),
+                        '_top' => t('Top'));
+
+    $element['button_styles'] = array(
+        '#title' => t('Basic CLF Button Styles'),
+        '#type' => 'select',
+        '#default_value' => $settings['button_styles'],
+        '#empty_option' => t('None'),
+        '#options' => get_CLF_button_styles(),
+    );
+
+
+    $element['custom_class'] = array(
+        '#title' => t('Custom class'),
+        '#type' => 'textfield',
+        '#maxlength' => 75,
+        '#default_value' => $settings['custom_class'],
+        '#description' => t('Add additional classes to your link'),
+        '#required' => FALSE,
+    );
+
+    $element['target'] = array(
+        '#title' => t('Target'),
+        '#type' => 'select',
+        '#default_value' => $settings['target'],
+        '#empty_option' => t('None'),
+        '#options' => $targets,
+    );
+
+
+    return $element;
+}
+
+function get_CLF_button_styles(){
+
+    $button_styles = array( 'btn' => t('Default'),
+                            'btn btn-primary' => t('Primary'),
+                            'btn btn-info' => t('Info'),
+                            'btn btn-success' => t('Success'),
+                            'btn btn-warning' => t('Warning'),
+                            'btn btn-danger' => t('Danger'),
+                            'btn btn-inverse' => t('Inverse'),
+                            'btn btn-link' => t('Link'),
+                            'icon-external-link' => ('External Link'),
+                            );
+    return $button_styles;
+}
+
+function get_CLF_button_style_label($style){
+    $button_styles = get_CLF_button_styles();
+    $label = '';
+
+    if(isset($button_styles[$style])){
+        $label = $button_styles[$style];
+    }
+
+    return $label;
+}
+
+
+/**
+ * Implements hook_field_formatter_settings_summary().
+ */
+function ubc_button_link_field_formatter_settings_summary($field, $instance, $view_mode)
+{
+    $display = $instance['display'][$view_mode];
+    $settings = $display['settings'];
+
+    $summary = array();
+
+    if (isset($settings['button_styles'])) {
+        $label = get_CLF_button_style_label($settings['button_styles']);
+        $summary[] = t('Basic CLF Button Styles: @style', array('@style' => $label));
+    }
+
+    if (isset($settings['custom_class'])) {
+        $summary[] = t('Custom class: @class', array('@class' => $settings['custom_class']));
+    }
+
+    if (isset($settings['target'])) {
+        $summary[] = t('Link target: @target', array('@target' => $settings['target']));
+    }
+
+    return implode('<br />', $summary);
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function ubc_button_link_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+
+    $element = array();
+    $settings = $display['settings'];
+
+    if(!empty($items)){
+
+        foreach ($items as $delta => $item) {
+            $url = $item['url'];
+            $title = $item['title'];
+        }
+
+        $target = (!empty($settings['target'])) ? 'target="'.$settings['target'].'"' : '';
+        if(!empty($settings['button_styles']) || !empty($settings['custom_class'])){
+            $classes = $settings['button_styles'] . ' ' . $settings['custom_class'];
+        }
+
+
+        $markup = '<a href="'.$url.'" '.$target.' class="'.$classes.'">'.$title.'</a>';
+
+        //watchdog('ubc_button_link',"Button item is $markup");
+        $element[0]['#markup'] = $markup;
+    }
+
+    return $element;
+}

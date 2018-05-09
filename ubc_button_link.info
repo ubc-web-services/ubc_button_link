@@ -1,0 +1,5 @@
+name = UBC Button Link Field Formatter
+description = "A custom field formatter that allows you to render link fields as UBC CLF buttons"
+package = UBC IT Web Services
+
+core = 7.x
